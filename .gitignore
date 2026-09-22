@@ -1,0 +1,17 @@
+.env
+.env.*
+!.env.example
+
+*.db
+*.sqlite3
+
+__pycache__/
+.pytest_cache/
+.venv/
+.venv*/
+*.pyc
+*.pyo
+
+.DS_Store
+.vscode/
+.idea/
