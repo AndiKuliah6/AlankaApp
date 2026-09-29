@@ -1,0 +1,2 @@
+ALTER TABLE customers
+ADD COLUMN IF NOT EXISTS survey_description TEXT NOT NULL DEFAULT '';

@@ -13,6 +13,7 @@ class Customer(Base):
     address: Mapped[str] = mapped_column(Text, default="")
     customer_type: Mapped[str] = mapped_column(String(40), default="Lainnya")
     notes: Mapped[str] = mapped_column(Text, default="")
+    survey_description: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     quotations: Mapped[list["Quotation"]] = relationship(back_populates="customer")
 

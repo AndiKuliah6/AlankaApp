@@ -196,10 +196,8 @@ Customer diperlukan sebelum membuat quotation atau invoice.
 
 1. Buka **Products & Jasa**.
 2. Isi kode, nama, tipe, kategori, satuan, harga modal, harga jual, dan stok.
-3. Untuk tipe `product`, harga jual dihitung otomatis: markup 20% untuk harga
-   modal sampai dengan Rp350.000 dan markup 25% untuk harga modal di atas
-   Rp350.000.
-4. Jasa dapat diinput dengan harga jual sendiri.
+3. Harga jual produk dan jasa dihitung otomatis: markup 20% untuk harga modal
+   sampai dengan Rp350.000 dan markup 25% untuk harga modal di atas Rp350.000.
 
 Saat startup pertama, aplikasi membuat data contoh customer dan katalog jika
 database masih kosong.
@@ -316,7 +314,8 @@ Ringkasnya:
 
 1. Buat project PostgreSQL/Supabase.
 2. Set `DATABASE_URL` ke connection string PostgreSQL.
-3. Jalankan [001_initial_schema.sql](database/migrations/001_initial_schema.sql).
+3. Jalankan [001_initial_schema.sql](database/migrations/001_initial_schema.sql), lalu
+   [002_add_customer_survey_description.sql](database/migrations/002_add_customer_survey_description.sql).
 4. Set `AUTO_CREATE_SCHEMA=false`.
 5. Jalankan aplikasi menggunakan konfigurasi tersebut.
 

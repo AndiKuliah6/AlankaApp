@@ -3,8 +3,8 @@ from decimal import Decimal, ROUND_HALF_UP
 MONEY = Decimal("0.01")
 PRODUCT_PRICE_THRESHOLD = Decimal("350000")
 
-def calculate_product_selling_price(cost_price):
-    """Apply the catalog markup rule to physical products."""
+def calculate_catalog_selling_price(cost_price):
+    """Apply the catalog markup rule to products and services."""
     cost_price = money(cost_price)
     markup = Decimal("0.25") if cost_price > PRODUCT_PRICE_THRESHOLD else Decimal("0.20")
     return money(cost_price * (Decimal("1") + markup))

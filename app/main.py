@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, joinedload
 from starlette.middleware.sessions import SessionMiddleware
 from .database import Base, engine, get_db
 from .models import Customer, Expense, Invoice, Payment, Product, Project, Quotation, QuotationItem
-from .services.calculation_service import calculate_item, calculate_product_selling_price, calculate_quotation
+from .services.calculation_service import calculate_catalog_selling_price, calculate_item, calculate_quotation
 from .services.pdf_service import quotation_pdf
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -100,25 +100,68 @@ def dashboard(request: Request, db: Session = Depends(get_db)):
 @app.get("/customers", response_class=HTMLResponse)
 def customers(request: Request, db: Session = Depends(get_db)):
     if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
-    return render(request, "customers.html", customers=db.scalars(select(Customer).order_by(Customer.id.desc())).all())
+    return render(request, "customers.html", customers=db.scalars(select(Customer).order_by(Customer.id.desc())).all(), editing_customer=None)
 
 @app.post("/customers")
-def add_customer(request: Request, name: str = Form(...), phone: str = Form(""), email: str = Form(""), address: str = Form(""), customer_type: str = Form("Lainnya"), db: Session = Depends(get_db)):
+def add_customer(request: Request, name: str = Form(...), phone: str = Form(""), email: str = Form(""), address: str = Form(""), customer_type: str = Form("Lainnya"), survey_description: str = Form(""), db: Session = Depends(get_db)):
     if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
-    db.add(Customer(name=name, phone=phone, email=email, address=address, customer_type=customer_type)); db.commit()
+    db.add(Customer(name=name, phone=phone, email=email, address=address, customer_type=customer_type, survey_description=survey_description)); db.commit()
+    return RedirectResponse("/customers", status_code=303)
+
+@app.get("/customers/{customer_id}/edit", response_class=HTMLResponse)
+def edit_customer_page(request: Request, customer_id: int, db: Session = Depends(get_db)):
+    if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
+    customer = db.get(Customer, customer_id)
+    if not customer: return RedirectResponse("/customers", status_code=303)
+    return render(request, "customers.html", customers=db.scalars(select(Customer).order_by(Customer.id.desc())).all(), editing_customer=customer)
+
+@app.post("/customers/{customer_id}/edit")
+def update_customer(request: Request, customer_id: int, name: str = Form(...), phone: str = Form(""), email: str = Form(""), address: str = Form(""), customer_type: str = Form("Lainnya"), survey_description: str = Form(""), db: Session = Depends(get_db)):
+    if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
+    customer = db.get(Customer, customer_id)
+    if customer:
+        customer.name = name
+        customer.phone = phone
+        customer.email = email
+        customer.address = address
+        customer.customer_type = customer_type
+        customer.survey_description = survey_description
+        db.commit()
     return RedirectResponse("/customers", status_code=303)
 
 @app.get("/products", response_class=HTMLResponse)
 def products(request: Request, db: Session = Depends(get_db)):
     if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
-    return render(request, "products.html", products=db.scalars(select(Product).order_by(Product.id.desc())).all())
+    return render(request, "products.html", products=db.scalars(select(Product).order_by(Product.id.desc())).all(), editing_product=None)
+
+@app.get("/products/{product_id}/edit", response_class=HTMLResponse)
+def edit_product_page(request: Request, product_id: int, db: Session = Depends(get_db)):
+    if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
+    product = db.get(Product, product_id)
+    if not product: return RedirectResponse("/products", status_code=303)
+    return render(request, "products.html", products=db.scalars(select(Product).order_by(Product.id.desc())).all(), editing_product=product)
 
 @app.post("/products")
 def add_product(request: Request, code: str = Form(...), name: str = Form(...), type: str = Form("product"), category: str = Form("Umum"), unit: str = Form("pcs"), cost_price: Decimal = Form(...), selling_price: Decimal = Form(0), stock: Decimal = Form(0), db: Session = Depends(get_db)):
     if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
-    if type == "product":
-        selling_price = calculate_product_selling_price(cost_price)
+    selling_price = calculate_catalog_selling_price(cost_price)
     db.add(Product(code=code, name=name, type=type, category=category, unit=unit, cost_price=cost_price, selling_price=selling_price, stock=stock)); db.commit()
+    return RedirectResponse("/products", status_code=303)
+
+@app.post("/products/{product_id}/edit")
+def update_product(request: Request, product_id: int, code: str = Form(...), name: str = Form(...), type: str = Form("product"), category: str = Form("Umum"), unit: str = Form("pcs"), cost_price: Decimal = Form(...), selling_price: Decimal = Form(...), stock: Decimal = Form(0), db: Session = Depends(get_db)):
+    if not is_authenticated(request): return RedirectResponse("/login", status_code=303)
+    product = db.get(Product, product_id)
+    if product:
+        product.code = code
+        product.name = name
+        product.type = type
+        product.category = category
+        product.unit = unit
+        product.cost_price = cost_price
+        product.selling_price = calculate_catalog_selling_price(cost_price)
+        product.stock = stock
+        db.commit()
     return RedirectResponse("/products", status_code=303)
 
 @app.get("/quotations", response_class=HTMLResponse)

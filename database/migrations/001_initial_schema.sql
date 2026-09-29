@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS customers (
     address TEXT NOT NULL DEFAULT '',
     customer_type VARCHAR(40) NOT NULL DEFAULT 'Lainnya',
     notes TEXT NOT NULL DEFAULT '',
+    survey_description TEXT NOT NULL DEFAULT '',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
